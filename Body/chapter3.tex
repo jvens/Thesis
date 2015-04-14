@@ -2,19 +2,6 @@
 %   that contains an example table and figure.
 \chapter{METHODS AND PROCEDURES}
 
-\section {Design Requirements}
-This project was completed in collaboration with a parallel project to develop a strain sensor by the Department of Civil, Construction, and Environment Engineering at Iowa State University.  The design requirements were set by that project and are given here.
-
-\subsection{Measured Parameter}
-The purpose of this project is to measure strain using the capacitive strain sensor designed in a parallel project.  The project requirement is to measure strain at a resolution of one micro-strain over a range of minus five-hundred to plus five-hundred micro-strain from the unstrained position.  The data acquisition system must be self calibrating and able to quickly recalibrate in the field.
-
-\subsection{Output Format}
-The output from the data acquisition circuit must be in a format that can be accurately measured by a data logging circuit such as an Intel iMote2.  In addition a custom logging circuit was designed which interfaces with the data acquisition circuit and reports the results to a computer over a USB connection.   
-
-\subsection{Power Requirements}
-In a future phase of this project the sensors and data acquisition system will be deployed onto remote bridges in a sensor network scheme.  After deployment the entire system will need to run using energy harvested from the surrounding environment.  Due to this restriction care must be taken throughout the design to ensure the minimum energy is required to measure the strain.
-
-
 \section{Capacitive Skin Sensor}
 The strain sensor used in this project is a soft elastomeric capacitor (SEC) developed by the Department of Civil, Construction, and Environmental Engineering at Iowa State University.  The SEC is composed of a nanocomposite mix of poly-styrene-co-ethylene-co-butylene-co-styrene (SEBS) (Dryfelx 500120) doped with rutile $TiO_2$ (Sachtleben R 320 D) serving as a dielectric for the capacitor\cite{soft-elastomeric-capacitor}.
 
@@ -233,25 +220,71 @@ Using this value of $\alpha$ the values of $C_{set}$ and $k$ can be set.  Choose
 The capacitive sensor is characterized for oscillation frequencies under one kilohertz.  
 
 \subsection{Output}
-The output form the data acquisition circuit is a square wave which has a frequency dependent on the strain of the sensor.  Due to limitations on the sensor due to its physical properties, the oscillation frequency must be kept below one kilohertz.  
+The output form the data acquisition circuit is a square wave which has a frequency dependent on the strain of the sensor.  The frequency of the square wave is depended on the capacitor $C_{set}$, the set potentiometer value, and the resistor value $R$ of the oscillator.  The higher this frequency is for a given value of $R$ the higher the overall sensitivity of the system; however, there is a physical limit of sampling frequency for the capacitive sensor that the frequency must remain under.
 
 \section{Data Acquisition Circuit}
-\subsection{Measured parameter}
-\subsubsection{Measurement method}
+The overall data acquisition includes the capacitive measurement circuit, calibration circuit, and USB interface.  This circuit samples the strain of the capacitive sensor using the capacitive measurement circuit and measures the frequency of the of the capacitive measurement circuit.  It will do some preprocessing of the data and then send it to the computer over a USB connection.  This circuit is also responsible for calibrating the unstrained frequency of the system at start up and when requested by the computer.  A microcontroller is used to connect all the subparts of the circuit together and control the entire system.  This is shown in the overall system diagram in Figure \ref{daq-system-fig}.  This system was implemented with the schematic shown in \ref{daq-schematic-fig}.
+
+\begin{figure}
+	\begin{center}
+		\includegraphics{Images/system-diagram.png}
+		\caption{Data acquisition system diagram}\label{daq-system-fig}
+	\end{center}
+\end{figure}
+
+\begin{figure}
+	\begin{center}
+		TODO: Need to change the passive values on the digital schematic and re-export since we re-tuned for the lower frequency.
+		\caption{System schematic}\label{daq-schematic-fig}
+	\end{center}
+\end{figure}
+
+\subsection{Measurement Method}
+The measurement method is the aforementioned relaxation oscillator in conjunction with the negative capacitance circuit.  The capacitive strain sensor is connected directly to the relaxation oscillator circuit along with the negative capacitor circuit.  The potentiometer of negative capacitor circuit is provided by the digital potentiometer which is used for calibration of the system.  
+
+The relaxation oscillator and negative capacitor circuits require positive and negative supply voltages to operate properly.  The system is powered from a single voltage source, and therefore these operational amplifier bias voltages must be created.  The system ground is chosen as the negative bias voltage and the system $V_{DD}$ is chosen as the positive bias voltage.  A virtual ground is created at the midpoint voltage between $V_{DD}$ and ground, and it is this virtual ground that is referenced for the analogue portions of the circuit.
+
+%% mention the choice of R here
+
 \subsection{Calibration}
-\subsubsection{Self calibration}
+The calibration is preformed using the digital potentiometer and the negative capacitor circuit.  The output frequency of the relaxation oscillator is selected by the parameters $C_{set}$, $R$, and the digital potentiometer set value.  The highest sensitivity for a given strain is achieved by selecting $R$ as large as physically possible and $C_{set}$ as close to the value of $C_0$ of the circuit as possible.  Therefore after these two values are set an unstrained frequency is selected to be as high as physically possible without degrading the physics of the capacitor to maximize sampling rate.  The value of the potentiometer is changed until the measured frequency matches the selected set point frequency.  
+
 \subsection{Communication protocol}
+The communication with the computer is over USB and connected as a virtual serial port.  The data transmitted from the data acquisition circuit to the computer is an ASCII formated string.  The format is ``\texttt{time, value\textbackslash n\textbackslash r}'' where \texttt{time} is a floating point time stamp in seconds and \texttt{value} is the raw measured value at that time.  The \texttt{\textbackslash n} is the linefeed character (ASCII 10) and \texttt{\textbackslash r} is the carriage return character (ASCII 13).  The value \texttt{time} starts at zero when the system is powered on and counts up at a resolution of 100 milliseconds.  The time stamp corresponds to the system time when the sampling process finished.  The \texttt{value} parameter is a raw value and can be converted into frequency using Equation \ref{daq-val-to-freq-eq} where $\beta$ is a scaling factor and is $32\text{MHz}$ on the current system.
 
-\section{Testing Software}
-\subsection{Computer companion program}
+\begin{equation}
+	f_{sens}=\frac{\beta}{\texttt{value}}\label{daq-val-to-freq-eq}
+\end{equation}
 
+The strain of the sensor can be calculated from \texttt{value} as well.  Define the received raw value as $V$ and the set point raw value as $V_0$.  From Equations \ref{relax-eq5} and \ref{daq-val-to-freq-eq} Equation \ref{daq-val-to-cap} can be found.
 
-%\begin{table}[h!tb] \centering
-%\setlength{\captionwidth}{3.5 in}
-%\isucaption{This table shows a standard empty table with
-%a limited captionwidth}
-%\label{nevermore}
-%
-%\vspace{ 2 in}
-%\end{table}
+\begin{eqnarray}
+	f(\Delta C, k)=\frac{\beta}{V}&=&\frac{1}{2\ln(3)R(C_0+\frac{k-256}{k}C_{set}+\Delta C)}\\
+	V&=&2\beta\ln(3)R\left(C_0+\frac{k-256}{k}C_{set}\right)+2\beta\ln(3)R\Delta C\\
+	V&=&V_0+2\beta\ln(3)R\Delta C\\
+	\Delta C&=&\frac{V-V_0}{2\beta\ln(3)R}\label{daq-val-to-cap}
+\end{eqnarray}
+
+% show how this relates to strain
+\subsection{Microcontroller}
+The microcontroller unit (MCU) selected for the data acquisition system was a PIC18LF2520.  This MCU was selected for its low power requirements, large amount of RAM, relatively high clock speed, and the well documented programming API.  The MCU also offered the peripherals needed for the system including input capture, serial peripheral interface (SPI), and universal asynchronous transceiver (UART).  
+
+\subsubsection{Frequency Measurement}
+The frequency of the capacitive strain sensor is measured using the input capture module of the MCU.  This module measures the time between events on a input pin.  The event used in this system was every sixteenth rising edge of the frequency signal.  By measuring the time between the first and sixteenth rising edge the average frequency of the signal over that time interval can be measured.
+
+The time measurement of the current system is the system clock of 8MHz divided by four.  This gives a timer frequency of 2MHz or a minimum measurement resolution of 500ns.  ---PLACEHOLDER: add the calculation that this equates to 15fF resolution at 1kHz---.  An option is being currently explored to increase the system clock to 32MHz yeilding a time resolution of 125ns which greatly exceeds the 1fF requirement ---and this equation too---.   
+
+The current system measures the average frequency averaged over sixteen pulses.  Assuming a nominal frequency of 1kHz this equates to a minimum of 16ms per sample and more when frequency is higher.  This is unable to meet the requirement of a 100Hz sample rate.   Options are being explored including changing the window from sixteen pulses down to eight pulses.  This would cut the per measurement sample time in half at the expense of also cutting the sensitivity in half.
+
+\subsubsection{Calibration Potentiometer} 
+The digital potentiometer used to calibrate the frequency communicates with the MCU over a serial peripheral interface (SPI).  The bus is used to serially set the position of the potentiometer.  It is also used to program the default potentiometer value into non-volatile memory inside the digital potentiometer.
+
+\subsubsection{Communication}
+Communication with the connected computer uses the universal asynchronous receiver and transmitter (UART).  The UART signal is connected to an FTDI UART to USB converter.  This converter connects to the computer and shows up as a virtual transport which can be written to and read from as if the circuit was plugged directly into the computers RS232 communications port.
+
+\subsection{Software}
+The software for the data acquisition system is relatively simple.  After a power-on-reset the MCU initializes the oscillator and other peripherals and then runs self calibration.  The self calibration sets the digital potentiometer to the midpoint value and measures the frequency.  It then increases or decreases as necessary and takes another frequency measurement.  This is repeated until the measured frequency matches the setpoint frequency within some tolerance.  The system then starts a system tick clock which interrupts every 250ms---Note to self: This will probably change to ever 100ms after dropping the samples down to 8 and getting the PLL to work---.  On each interrupt of this system clock a new frequency measurement is taken and that frequency along with the time it was taken is returned to the computer over the UART to USB connection.  This process is repeated indefinitely until the user stops it.  
+
+The system receives commands over the UART. Commands are delimited by line feed characters (ASCII 10) at which time the command is deciphered asynchronously in an interrupt routine.  Currently three types of commands are supported.  The first command is a number between 0 and 255 inclusive.  This command is used as a new digital potentiometer value and applied immediately.  The second command is an ASCII `c' character followed by a number.  The number following the `c' is used as a new frequency set point value and the system is immediately recalibrate to that new frequency.  The frequency is as a raw value which corresponds to a real frequency using Equation \ref{daq-val-to-freq-eq}.  The final command currently supported is the ASCII character `r' which causes the system to do a hard reset.  This will recalibrate the frequency to its power on default and restart the time stamp count at zero.
+
 

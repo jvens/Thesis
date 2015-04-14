@@ -8,35 +8,25 @@ The ever increasing availability of smaller, cheaper, and more power efficient e
 Iowa State University's Civil, Construction, and Environmental Engineering department has developed a new type of strain skin sensor.  To enable the use of this new type of strain sensor requires a new high sensitivity data acquisition and logging system.  This system must be small, energy efficient, and capable of measuring small changes in capacitance in a reasonably short amount of time.  This data acquisition and logging circuitry will ultimately be networked by a wireless sensor network in order to detect fatigue cracks forming on a bridge and assessing the overall health of the bridge during phase two of the project.
 
 \subsection{Capacitive Skin Sensor}
-
-This project revolves around a capacitive strain skin sensor develop by the Iowa State University department of Civil, Construction, and Environmental Engineering under the direction of Dr. Simon Laflamme.  
-
-\subsubsection{Parts of the hypothesis}
-
-Here one particular part of the hypothesis that is 
-currently being explained is examined and particular
-elements of that part are given careful scrutiny.
-
-% Below \subsubsection
-% Sectional commands: \paragraph and \subparagraph may also be used
+This project revolves around a capacitive strain skin sensor develop by the Iowa State University department of Civil, Construction, and Environmental Engineering under the direction of Dr. Simon Laflamme.  This sensor changes its capacitive relative to the applied strain on the sensor.  This sensor is constructed in such a way that it can be attached to steel beams on bridges to detect cracks forming.
 
 \subsection{Capacitive Measurement}
-
-Here one particular hypothesis is explained in depth
-and is examined in the light of current literature.
-
-\subsubsection{Parts of the second hypothesis}
-
-Here one particular part of the hypothesis that is 
-currently being explained is examined and particular
-elements of that part are given careful scrutiny.
+A large aspect of this project is to measure the capacitive change of the capacitive sensors to detect the formations of cracks.  The sensors alone have a very small sensitivity to the change in strain making these measurements very difficult.  Therefore a new method of measuring small changes in capacitance was developed which can greatly increase the sensitivity of the overall system.  This new capacitive measurement system has been designed and is undergoing testing presently.
 
 \subsection{Data Acquisition}
+The final core part of this project is the ability to acquire and log the measured strain over time.  This all together is the data acquisition and forms the entire system designed.  The data acquisition also has self calibration features to counter the effects of using different capacitive sensors.  The acquisition system connects to a computer via a USB connections and can log the strain data in MATLAB for analysis and post processing to detect the formation of cracks.
 
-\section{Criteria Review}
 
-Here certain criteria are explained thus eventually
-leading to a foregone conclusion.
+\section {Design Requirements}
+This project was completed in collaboration with a parallel project to develop a strain sensor by the Department of Civil, Construction, and Environment Engineering at Iowa State University.  The design requirements were set by that project and are given here.
 
+\subsection{Measured Parameter}
+The purpose of this project is to measure strain using the capacitive strain sensor designed in a parallel project.  The project requirement is to measure strain at a resolution of one micro-strain over a range of minus five-hundred to plus five-hundred micro-strain from the unstrained position.  The data acquisition system must be self calibrating and able to quickly recalibrate in the field.
+
+\subsection{Output Format}
+The output from the data acquisition circuit must be in a format that can be accurately measured by a data logging circuit such as an Intel iMote2.  In addition a custom logging circuit was designed which interfaces with the data acquisition circuit and reports the results to a computer over a USB connection.   
+
+\subsection{Power Requirements}
+In a future phase of this project the sensors and data acquisition system will be deployed onto remote bridges in a sensor network scheme.  After deployment the entire system will need to run using energy harvested from the surrounding environment.  Due to this restriction care must be taken throughout the design to ensure the minimum energy is required to measure the strain.
 
 
